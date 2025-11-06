@@ -1,28 +1,49 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>My patients</h2>
-<a class="btn btn-success mb-3" href="{{ url_for('patient_new') }}">Add new patient</a>
+<h2 class="mb-3">My Patients</h2>
 
+<!-- Кнопки сверху -->
+<div class="mb-3">
+    <a class="btn btn-success" href="{{ url_for('patient_new') }}">Add New Patient</a>
+    <a class="btn btn-info" href="{{ url_for('survey') }}">Take SUS Survey</a>
+</div>
+
+<!-- Проверяем, есть ли пациенты -->
 {% if patients %}
-  <table class="table table-bordered">
-    <thead><tr><th>Name</th><th>Age</th><th>Last Visit</th><th>Actions</th></tr></thead>
+<table class="table table-striped table-bordered align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Photo</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Last Visit</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
     <tbody>
-      {% for p in patients %}
-      <tr>
-        <td>{{ p.name }}</td>
-        <td>{{ p.age }}</td>
-        <td>{{ p.last_visit }}</td>
-        <td>
-          <a class="btn btn-sm btn-primary" href="{{ url_for('patient_edit', pid=p.id) }}">Edit</a>
-          <form method="post" action="{{ url_for('patient_delete', pid=p.id) }}" style="display:inline;">
-            <button class="btn btn-sm btn-danger" onclick="return confirm('Delete?')">Delete</button>
-          </form>
-        </td>
-      </tr>
-      {% endfor %}
+        {% for p in patients %}
+        <tr>
+            <td>
+                {% if p.image_filename %}
+                    <img src="{{ url_for('uploaded_file', filename=p.image_filename) }}" width="60" class="rounded">
+                {% else %}
+                    <span class="text-muted">No Photo</span>
+                {% endif %}
+            </td>
+            <td>{{ p.name }}</td>
+            <td>{{ p.age }}</td>
+            <td>{{ p.last_visit }}</td>
+            <td>
+                <a class="btn btn-primary btn-sm" href="{{ url_for('patient_edit', pid=p.id) }}">Edit</a>
+                <form method="post" action="{{ url_for('patient_delete', pid=p.id) }}" style="display:inline;">
+                    <button class="btn btn-danger btn-sm" onclick="return confirm('Delete this patient?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
     </tbody>
-  </table>
+</table>
 {% else %}
-  <p>No patients yet.</p>
+<p class="text-muted">No patients yet. Start by adding a new patient above.</p>
 {% endif %}
 {% endblock %}

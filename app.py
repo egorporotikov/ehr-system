@@ -38,6 +38,7 @@ class Patient(db.Model):
 def index():
     return render_template('index.html')
 
+# --- Registration ---
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -47,10 +48,10 @@ def register():
         if not name or not email or not password_raw:
             flash('Fill all fields', 'danger')
             return redirect(url_for('register'))
-        password = generate_password_hash(password_raw)
         if Doctor.query.filter_by(email=email).first():
             flash('Email already registered!', 'warning')
             return redirect(url_for('register'))
+        password = generate_password_hash(password_raw)
         new_doctor = Doctor(name=name, email=email, password=password)
         db.session.add(new_doctor)
         db.session.commit()
@@ -58,6 +59,7 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html')
 
+# --- Login ---
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -73,15 +75,27 @@ def login():
             flash('Invalid email or password.', 'danger')
     return render_template('login.html')
 
+# --- Dashboard with search ---
 @app.route('/dashboard')
 def dashboard():
     if 'doctor_id' not in session:
         flash('Please log in first.', 'warning')
         return redirect(url_for('login'))
+
     doctor_id = session['doctor_id']
-    patients = Patient.query.filter_by(doctor_id=doctor_id).all()
+    search_query = request.args.get('search', '').strip()
+
+    if search_query:
+        patients = Patient.query.filter(
+            Patient.doctor_id == doctor_id,
+            Patient.name.ilike(f'%{search_query}%')
+        ).all()
+    else:
+        patients = Patient.query.filter_by(doctor_id=doctor_id).all()
+
     return render_template('dashboard.html', patients=patients)
 
+# --- New Patient ---
 @app.route('/patient/new', methods=['GET','POST'])
 def patient_new():
     if 'doctor_id' not in session:
@@ -116,6 +130,7 @@ def patient_new():
         return redirect(url_for('dashboard'))
     return render_template('ehr_form.html', patient=None)
 
+# --- Edit Patient ---
 @app.route('/patient/<int:pid>/edit', methods=['GET','POST'])
 def patient_edit(pid):
     if 'doctor_id' not in session:
@@ -142,6 +157,7 @@ def patient_edit(pid):
         return redirect(url_for('dashboard'))
     return render_template('ehr_form.html', patient=p)
 
+# --- Delete Patient ---
 @app.route('/patient/<int:pid>/delete', methods=['POST'])
 def patient_delete(pid):
     if 'doctor_id' not in session:
@@ -155,15 +171,27 @@ def patient_delete(pid):
     flash('Patient deleted', 'success')
     return redirect(url_for('dashboard'))
 
+# --- Survey (SUS) ---
 @app.route('/survey', methods=['GET','POST'])
 def survey():
-    # simple SUS capture: store responses in DB later (for now just show page)
+    questions = [
+        "I think that using this application is easy.",
+        "I found the system unnecessarily complex.",
+        "I think the system is intuitive.",
+        "I would like to use this application frequently.",
+        "I found the system inconsistent.",
+        "I think most people would learn to use this system quickly.",
+        "I found the system cumbersome.",
+        "I felt confident using the application.",
+        "I needed to learn a lot before I could use the system.",
+        "Overall, I like using this application."
+    ]
     if request.method == 'POST':
-        # handle and save answers (we'll add DB table later)
         flash('Thank you for completing the survey!', 'success')
         return redirect(url_for('dashboard'))
-    return render_template('survey.html')
+    return render_template('survey.html', questions=questions)
 
+# --- Logout ---
 @app.route('/logout')
 def logout():
     session.pop('doctor_id', None)
@@ -171,15 +199,13 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
-# Serve uploaded files (for dev)
+# --- Serve uploaded files ---
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-# --- Run app ---
+# --- Run App ---
 if __name__ == '__main__':
-    if not os.path.exists('instance'):
-        os.makedirs('instance')
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run()
