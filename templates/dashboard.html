@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>My patients</h2>
+<a class="btn btn-success mb-3" href="{{ url_for('patient_new') }}">Add new patient</a>
+
+{% if patients %}
+  <table class="table table-bordered">
+    <thead><tr><th>Name</th><th>Age</th><th>Last Visit</th><th>Actions</th></tr></thead>
+    <tbody>
+      {% for p in patients %}
+      <tr>
+        <td>{{ p.name }}</td>
+        <td>{{ p.age }}</td>
+        <td>{{ p.last_visit }}</td>
+        <td>
+          <a class="btn btn-sm btn-primary" href="{{ url_for('patient_edit', pid=p.id) }}">Edit</a>
+          <form method="post" action="{{ url_for('patient_delete', pid=p.id) }}" style="display:inline;">
+            <button class="btn btn-sm btn-danger" onclick="return confirm('Delete?')">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>No patients yet.</p>
+{% endif %}
+{% endblock %}

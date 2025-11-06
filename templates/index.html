@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="jumbotron">
+  <h1 class="display-5">EHR Information System</h1>
+  <p class="lead">A demo Electronic Health Record system for course project.</p>
+  <hr>
+  <p>Login to manage patients or register as a new doctor.</p>
+  <a class="btn btn-primary" href="{{ url_for('register') }}">Register</a>
+  <a class="btn btn-secondary" href="{{ url_for('login') }}">Login</a>
+</div>
+{% endblock %}
