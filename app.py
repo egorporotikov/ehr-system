@@ -33,6 +33,34 @@ class Patient(db.Model):
     allergies = db.Column(db.String(200))
     image_filename = db.Column(db.String(200))
 
+class SUSResult(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'))
+    q1 = db.Column(db.Integer, nullable=False)
+    q2 = db.Column(db.Integer, nullable=False)
+    q3 = db.Column(db.Integer, nullable=False)
+    q4 = db.Column(db.Integer, nullable=False)
+    q5 = db.Column(db.Integer, nullable=False)
+    q6 = db.Column(db.Integer, nullable=False)
+    q7 = db.Column(db.Integer, nullable=False)
+    q8 = db.Column(db.Integer, nullable=False)
+    q9 = db.Column(db.Integer, nullable=False)
+    q10 = db.Column(db.Integer, nullable=False)
+    submitted_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+SUS_QUESTIONS = [
+    "1. I think that I would like to use this system frequently.",
+    "2. I found the system unnecessarily complex.",
+    "3. I thought the system was easy to use.",
+    "4. I think that I would need the support of a technical person to be able to use this system.",
+    "5. I found the various functions in this system were well integrated.",
+    "6. I thought there was too much inconsistency in this system.",
+    "7. I would imagine that most people would learn to use this system very quickly.",
+    "8. I found the system very cumbersome to use.",
+    "9. I felt very confident using the system.",
+    "10. I needed to learn a lot of things before I could get going with this system."
+]
+
 # --- Routes ---
 @app.route('/')
 def index():
@@ -45,12 +73,15 @@ def register():
         name = request.form.get('name','').strip()
         email = request.form.get('email','').strip()
         password_raw = request.form.get('password','').strip()
+
         if not name or not email or not password_raw:
             flash('Fill all fields', 'danger')
             return redirect(url_for('register'))
+
         if Doctor.query.filter_by(email=email).first():
             flash('Email already registered!', 'warning')
             return redirect(url_for('register'))
+
         password = generate_password_hash(password_raw)
         new_doctor = Doctor(name=name, email=email, password=password)
         db.session.add(new_doctor)
@@ -66,6 +97,7 @@ def login():
         email = request.form.get('email','').strip()
         password = request.form.get('password','').strip()
         doctor = Doctor.query.filter_by(email=email).first()
+
         if doctor and check_password_hash(doctor.password, password):
             session['doctor_id'] = doctor.id
             session['doctor_name'] = doctor.name
@@ -73,6 +105,7 @@ def login():
             return redirect(url_for('dashboard'))
         else:
             flash('Invalid email or password.', 'danger')
+
     return render_template('login.html')
 
 # --- Dashboard with search ---
@@ -100,6 +133,7 @@ def dashboard():
 def patient_new():
     if 'doctor_id' not in session:
         return redirect(url_for('login'))
+
     if request.method == 'POST':
         name = request.form.get('name','').strip()
         age = request.form.get('age') or None
@@ -108,11 +142,13 @@ def patient_new():
         weight = request.form.get('weight') or None
         last_visit = request.form.get('last_visit','')
         allergies = ",".join(request.form.getlist('allergies'))
+
         file = request.files.get('image')
         filename = None
         if file and file.filename:
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
         p = Patient(
             doctor_id=session['doctor_id'],
             name=name,
@@ -128,6 +164,7 @@ def patient_new():
         db.session.commit()
         flash('Patient created', 'success')
         return redirect(url_for('dashboard'))
+
     return render_template('ehr_form.html', patient=None)
 
 # --- Edit Patient ---
@@ -135,10 +172,12 @@ def patient_new():
 def patient_edit(pid):
     if 'doctor_id' not in session:
         return redirect(url_for('login'))
+
     p = Patient.query.get_or_404(pid)
     if p.doctor_id != session['doctor_id']:
         flash('Not authorized', 'danger')
         return redirect(url_for('dashboard'))
+
     if request.method == 'POST':
         p.name = request.form.get('name','').strip()
         p.age = int(request.form.get('age') or 0)
@@ -147,14 +186,17 @@ def patient_edit(pid):
         p.weight = float(request.form.get('weight') or 0)
         p.last_visit = request.form.get('last_visit','')
         p.allergies = ",".join(request.form.getlist('allergies'))
+
         file = request.files.get('image')
         if file and file.filename:
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             p.image_filename = filename
+
         db.session.commit()
         flash('Patient updated', 'success')
         return redirect(url_for('dashboard'))
+
     return render_template('ehr_form.html', patient=p)
 
 # --- Delete Patient ---
@@ -162,10 +204,12 @@ def patient_edit(pid):
 def patient_delete(pid):
     if 'doctor_id' not in session:
         return redirect(url_for('login'))
+
     p = Patient.query.get_or_404(pid)
     if p.doctor_id != session['doctor_id']:
         flash('Not authorized', 'danger')
         return redirect(url_for('dashboard'))
+
     db.session.delete(p)
     db.session.commit()
     flash('Patient deleted', 'success')
@@ -174,22 +218,32 @@ def patient_delete(pid):
 # --- Survey (SUS) ---
 @app.route('/survey', methods=['GET','POST'])
 def survey():
-    questions = [
-        "I think that using this application is easy.",
-        "I found the system unnecessarily complex.",
-        "I think the system is intuitive.",
-        "I would like to use this application frequently.",
-        "I found the system inconsistent.",
-        "I think most people would learn to use this system quickly.",
-        "I found the system cumbersome.",
-        "I felt confident using the application.",
-        "I needed to learn a lot before I could use the system.",
-        "Overall, I like using this application."
-    ]
+    if 'doctor_id' not in session:
+        flash('Please log in first.', 'warning')
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
+        answers = [int(request.form.get(f'q{i}', 0)) for i in range(1, 11)]
+        sus = SUSResult(
+            doctor_id=session['doctor_id'],
+            q1=answers[0], q2=answers[1], q3=answers[2], q4=answers[3], q5=answers[4],
+            q6=answers[5], q7=answers[6], q8=answers[7], q9=answers[8], q10=answers[9]
+        )
+        db.session.add(sus)
+        db.session.commit()
         flash('Thank you for completing the survey!', 'success')
         return redirect(url_for('dashboard'))
-    return render_template('survey.html', questions=questions)
+
+    return render_template('survey.html')
+
+@app.route('/sus_results')
+def sus_results():
+    if 'doctor_id' not in session:
+        flash('Please log in first.', 'warning')
+        return redirect(url_for('login'))
+
+    results = SUSResult.query.order_by(SUSResult.submitted_at.desc()).all()
+    return render_template('sus_results.html', results=results, questions=SUS_QUESTIONS)
 
 # --- Logout ---
 @app.route('/logout')
@@ -198,6 +252,14 @@ def logout():
     session.pop('doctor_name', None)
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+@app.route('/ehr_info')
+def ehr_info():
+    return render_template('ehr_info.html')
 
 # --- Serve uploaded files ---
 @app.route('/uploads/<filename>')
@@ -208,4 +270,4 @@ def uploaded_file(filename):
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run()
+    app.run(debug=True)

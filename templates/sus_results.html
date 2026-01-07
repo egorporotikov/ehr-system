@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">SUS Survey Results</h2>
+
+{% set questions = [
+    "1. I think that I would like to use this system frequently.",
+    "2. I found the system unnecessarily complex.",
+    "3. I thought the system was easy to use.",
+    "4. I think that I would need the support of a technical person to be able to use this system.",
+    "5. I found the various functions in this system were well integrated.",
+    "6. I thought there was too much inconsistency in this system.",
+    "7. I would imagine that most people would learn to use this system very quickly.",
+    "8. I found the system very cumbersome to use.",
+    "9. I felt very confident using the system.",
+    "10. I needed to learn a lot of things before I could get going with this system."
+] %}
+
+{% for result in results %}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        Submission #{{ result.id }} - {{ result.submitted_at.strftime('%Y-%m-%d %H:%M') }}
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered table-striped">
+            <thead class="table-light">
+                <tr>
+                    <th>Question</th>
+                    <th>Answer</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>{{ questions[0] }}</td><td>{{ result.q1 }}</td></tr>
+                <tr><td>{{ questions[1] }}</td><td>{{ result.q2 }}</td></tr>
+                <tr><td>{{ questions[2] }}</td><td>{{ result.q3 }}</td></tr>
+                <tr><td>{{ questions[3] }}</td><td>{{ result.q4 }}</td></tr>
+                <tr><td>{{ questions[4] }}</td><td>{{ result.q5 }}</td></tr>
+                <tr><td>{{ questions[5] }}</td><td>{{ result.q6 }}</td></tr>
+                <tr><td>{{ questions[6] }}</td><td>{{ result.q7 }}</td></tr>
+                <tr><td>{{ questions[7] }}</td><td>{{ result.q8 }}</td></tr>
+                <tr><td>{{ questions[8] }}</td><td>{{ result.q9 }}</td></tr>
+                <tr><td>{{ questions[9] }}</td><td>{{ result.q10 }}</td></tr>
+            </tbody>
+        </table>
+
+        {% set total_score = result.q1 + result.q2 + result.q3 + result.q4 + result.q5 + result.q6 + result.q7 + result.q8 + result.q9 + result.q10 %}
+        
+        <p class="mt-2"><strong>Total Score:</strong> {{ total_score }} / 50</p>
+        
+        {% if total_score < 20 %}
+            <p class="text-danger"><strong>Usability:</strong> Poor</p>
+        {% elif total_score < 30 %}
+            <p class="text-warning"><strong>Usability:</strong> Average</p>
+        {% elif total_score < 40 %}
+            <p class="text-info"><strong>Usability:</strong> Good</p>
+        {% else %}
+            <p class="text-success"><strong>Usability:</strong> Excellent</p>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+
+{% if results|length == 0 %}
+<p>No survey submissions yet.</p>
+{% endif %}
+{% endblock %}
