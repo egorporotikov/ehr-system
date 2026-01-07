@@ -1,54 +1,75 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>{% if patient %}Edit{% else %}New{% endif %} patient</h2>
-<form method="post" enctype="multipart/form-data">
-  <div class="mb-3">
-    <label class="form-label">Name</label>
-    <input class="form-control" name="name" value="{{ patient.name if patient else '' }}" required>
-  </div>
-  <div class="mb-3">
-    <label class="form-label">Age</label>
-    <input type="number" class="form-control" name="age" value="{{ patient.age if patient else '' }}">
-  </div>
-  <div class="mb-3">
-    <label class="form-label">Weight (kg)</label>
-    <input type="number" step="0.1" class="form-control" name="weight" value="{{ patient.weight if patient else '' }}">
-  </div>
-  <div class="mb-3">
-    <label class="form-label">Gender</label>
-    <div>
-      <input type="radio" name="gender" value="male" {% if patient and patient.gender=='male' %}checked{% endif %}> Male
-      <input type="radio" name="gender" value="female" {% if patient and patient.gender=='female' %}checked{% endif %}> Female
+
+<h2>{{ 'Edit Patient' if patient else 'New Patient' }}</h2>
+
+<form method="POST" enctype="multipart/form-data">
+
+    <!-- TEXT INPUT -->
+    <div class="mb-3">
+        <label>Name</label>
+        <input class="form-control" name="name" required
+               value="{{ patient.name if patient else '' }}">
     </div>
-  </div>
-  <div class="mb-3">
-    <label class="form-label">Allergies (choose)</label><br>
-    <input type="checkbox" name="allergies" value="pollen"> Pollen
-    <input type="checkbox" name="allergies" value="nuts"> Nuts
-    <input type="checkbox" name="allergies" value="penicillin"> Penicillin
-  </div>
-  <div class="mb-3">
-    <label class="form-label">Last visit</label>
-    <input class="form-control" id="last_visit" name="last_visit" value="{{ patient.last_visit if patient else '' }}">
-  </div>
-  <div class="mb-3">
-    <label class="form-label">Medical history</label>
-    <textarea class="form-control" name="medical_history">{{ patient.medical_history if patient else '' }}</textarea>
-  </div>
-  <div class="mb-3">
-    <label class="form-label">Upload image (photo or scan)</label>
-    <input type="file" class="form-control" name="image">
-    {% if patient and patient.image_filename %}
-      <img src="{{ url_for('uploaded_file', filename=patient.image_filename) }}" style="max-width:150px;margin-top:10px;">
-    {% endif %}
-  </div>
-  <button class="btn btn-primary">Save</button>
+
+    <!-- NUMBER INPUT -->
+    <div class="mb-3">
+        <label>Age</label>
+        <input class="form-control" type="number" name="age"
+               value="{{ patient.age if patient else '' }}">
+    </div>
+
+    <!-- RADIO -->
+    <div class="mb-3">
+        <label>Gender</label><br>
+        <input type="radio" name="gender" value="Male"
+            {% if patient and patient.gender == 'Male' %}checked{% endif %}> Male
+        <input type="radio" name="gender" value="Female"
+            {% if patient and patient.gender == 'Female' %}checked{% endif %}> Female
+    </div>
+
+    <!-- DATEPICKER (FLATPICKR) -->
+    <div class="mb-3">
+        <label>Last Visit</label>
+        <input type="text" id="last_visit" name="last_visit"
+               class="form-control"
+               value="{{ patient.last_visit if patient else '' }}">
+    </div>
+
+    <!-- CHECKBOX -->
+    <div class="mb-3">
+        <label>Allergies</label><br>
+        <input type="checkbox" name="allergies" value="Pollen"> Pollen
+        <input type="checkbox" name="allergies" value="Dust"> Dust
+        <input type="checkbox" name="allergies" value="Food"> Food
+    </div>
+
+    <!-- TEXTAREA -->
+    <div class="mb-3">
+        <label>Medical History</label>
+        <textarea class="form-control" name="medical_history">{{ patient.medical_history if patient else '' }}</textarea>
+    </div>
+
+    <!-- IMAGE UPLOAD -->
+    <div class="mb-3">
+        <label>Patient Photo</label>
+        <input class="form-control" type="file" name="image">
+        {% if patient and patient.image_filename %}
+            <img src="{{ url_for('uploaded_file', filename=patient.image_filename) }}"
+                 width="120" class="mt-2">
+        {% endif %}
+    </div>
+
+    <button class="btn btn-success">Save</button>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
 </form>
 
-<!-- include flatpickr (datepicker) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<!-- FLATPICKR INIT -->
 <script>
-  flatpickr("#last_visit", {dateFormat: "Y-m-d"});
+    flatpickr("#last_visit", {
+        dateFormat: "Y-m-d",
+        allowInput: true
+    });
 </script>
+
 {% endblock %}
