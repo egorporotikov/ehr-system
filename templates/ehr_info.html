@@ -1,16 +1,202 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
 {% block content %}
-<h2>EHR System Information</h2>
-<p>An Electronic Health Record (EHR) system helps doctors manage patient data, including:</p>
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold">What is an EHR System?</h1>
+            <p class="lead text-muted">Understanding Electronic Health Records</p>
+        </div>
 
-<ul>
-    <li>Patient demographics (name, age, gender)</li>
-    <li>Medical history</li>
-    <li>Medications and allergies</li>
-    <li>Lab tests and radiology images</li>
-    <li>Vital signs (weight, age, last visit)</li>
-    <li>Billing information</li>
-</ul>
+        <div class="card shadow mb-4">
+            <div class="card-body p-5">
+                <h3 class="mb-4"><i class="bi bi-info-circle text-primary"></i> Overview</h3>
+                <p class="lead">
+                    An Electronic Health Record (EHR) is a digital version of a patient's paper chart. EHRs are real-time, 
+                    patient-centered records that make information available instantly and securely to authorized users.
+                </p>
+                <p>
+                    Unlike traditional paper records, EHRs contain the medical and treatment histories of patients and 
+                    are designed to go beyond standard clinical data collected in a provider's office to include a broader 
+                    view of a patient's care.
+                </p>
+            </div>
+        </div>
 
-<p>This project demonstrates CRUD operations, image uploads, survey collection, and a responsive dashboard using Flask, Bootstrap, and SQLite/MySQL.</p>
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="card shadow h-100">
+                    <div class="card-body">
+                        <h4 class="text-primary"><i class="bi bi-file-medical"></i> What EHRs Include</h4>
+                        <ul class="mt-3">
+                            <li><strong>Patient demographics:</strong> Name, age, gender</li>
+                            <li><strong>Medical history:</strong> Past conditions and treatments</li>
+                            <li><strong>Medications:</strong> Current and past prescriptions</li>
+                            <li><strong>Allergies:</strong> Known drug and food allergies</li>
+                            <li><strong>Immunization status:</strong> Vaccination records</li>
+                            <li><strong>Laboratory test results:</strong> Blood work, cultures</li>
+                            <li><strong>Radiology images:</strong> X-rays, MRIs, CT scans</li>
+                            <li><strong>Vital signs:</strong> Blood pressure, temperature</li>
+                            <li><strong>Personal statistics:</strong> Age, weight, BMI</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow h-100">
+                    <div class="card-body">
+                        <h4 class="text-success"><i class="bi bi-patch-check"></i> Benefits of EHRs</h4>
+                        <ul class="mt-3">
+                            <li><strong>Improved patient care:</strong> Quick access to complete records</li>
+                            <li><strong>Better coordination:</strong> Seamless information sharing</li>
+                            <li><strong>Enhanced security:</strong> Controlled access to records</li>
+                            <li><strong>Reduced errors:</strong> Legible, standardized documentation</li>
+                            <li><strong>Cost savings:</strong> Less paperwork and duplication</li>
+                            <li><strong>Improved diagnosis:</strong> Complete medical history</li>
+                            <li><strong>Patient engagement:</strong> Access to own health data</li>
+                            <li><strong>Data analytics:</strong> Population health insights</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-body p-5">
+                <h3 class="mb-4"><i class="bi bi-gear text-primary"></i> Our EHR System Features</h3>
+                
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="bi bi-person-badge text-primary" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3">Patient Management</h5>
+                            <p class="text-muted">
+                                Create, read, update, and delete patient records with comprehensive health information.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="bi bi-lock text-primary" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3">Secure Access</h5>
+                            <p class="text-muted">
+                                Email verification, strong password requirements, and encrypted data storage.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="bi bi-search text-primary" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3">Quick Search</h5>
+                            <p class="text-muted">
+                                Instantly find patient records by name with our powerful search functionality.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="bi bi-image text-primary" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3">Image Upload</h5>
+                            <p class="text-muted">
+                                Store X-rays, MRIs, and other medical images directly with patient records.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="bi bi-exclamation-triangle text-primary" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3">Allergy Tracking</h5>
+                            <p class="text-muted">
+                                Track patient allergies to prevent adverse drug reactions and ensure safety.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="bi bi-calendar-date text-primary" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3">Visit History</h5>
+                            <p class="text-muted">
+                                Record and track patient visits with an easy-to-use date picker interface.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow mb-4 bg-light">
+            <div class="card-body p-5">
+                <h3 class="mb-4"><i class="bi bi-shield-check text-primary"></i> Security & Privacy</h3>
+                <p>
+                    Our system implements industry-standard security measures to protect sensitive health information:
+                </p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul>
+                            <li><strong>Email Verification:</strong> Confirm identity before account activation</li>
+                            <li><strong>Password Encryption:</strong> Secure password hashing</li>
+                            <li><strong>Access Control:</strong> Doctors only see their own patients</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul>
+                            <li><strong>Session Management:</strong> Secure login sessions</li>
+                            <li><strong>Password Recovery:</strong> Secure reset via email</li>
+                            <li><strong>Data Validation:</strong> Input sanitization and validation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-body p-5">
+                <h3 class="mb-4"><i class="bi bi-bar-chart text-primary"></i> System Evaluation</h3>
+                <p>
+                    We use the <strong>System Usability Scale (SUS)</strong> to continuously improve our platform. 
+                    The SUS is a reliable tool for measuring usability consisting of a 10-item questionnaire with 
+                    five response options for respondents.
+                </p>
+                <p>
+                    After using our system, we encourage healthcare professionals to complete the SUS survey to help 
+                    us identify areas for improvement and ensure the best possible user experience.
+                </p>
+                <div class="text-center mt-4">
+                    {% if session.get('doctor_id') %}
+                        <a href="{{ url_for('survey') }}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-clipboard-check"></i> Take the SUS Survey
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-person-plus"></i> Register to Try Our System
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow border-primary">
+            <div class="card-body p-5 text-center">
+                <h3 class="mb-3"><i class="bi bi-question-circle text-primary"></i> Have Questions?</h3>
+                <p class="mb-4">Learn more about how our EHR system can benefit your practice</p>
+                <div class="d-flex gap-3 justify-content-center">
+                    <a href="{{ url_for('about') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-info-circle"></i> About Us
+                    </a>
+                    <a href="{{ url_for('register') }}" class="btn btn-primary">
+                        <i class="bi bi-rocket"></i> Get Started
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 {% endblock %}

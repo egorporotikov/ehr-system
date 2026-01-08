@@ -1,18 +1,35 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
+from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 import os
+import re
+from flask_migrate import Migrate
+
 
 # --- App Setup ---
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'replace_this_with_a_random_secret'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'replace_this_with_a_random_secret')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+# Email Configuration - Mailtrap
+app.config['MAIL_SERVER'] = 'sandbox.smtp.mailtrap.io'
+app.config['MAIL_PORT'] = 2525
+app.config['MAIL_USERNAME'] = '8eaccad9862746'
+app.config['MAIL_PASSWORD'] = 'a67c60268643b5'
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_DEFAULT_SENDER'] = 'noreply@ehr-system.com'
+
 db = SQLAlchemy(app)
+mail = Mail(app)
+migrate = Migrate(app, db)  # Flask-Migrate
+serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
 # --- Models ---
 class Doctor(db.Model):
@@ -20,6 +37,8 @@ class Doctor(db.Model):
     name = db.Column(db.String(100))
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(200))
+    confirmed = db.Column(db.Boolean, default=False)
+    confirmed_on = db.Column(db.DateTime, nullable=True)
 
 class Patient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -61,6 +80,88 @@ SUS_QUESTIONS = [
     "10. I needed to learn a lot of things before I could get going with this system."
 ]
 
+# --- Helper Functions ---
+def validate_password(password):
+    """Validate password strength"""
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters long"
+    if not re.search(r'[A-Z]', password):
+        return False, "Password must contain at least one uppercase letter"
+    if not re.search(r'[a-z]', password):
+        return False, "Password must contain at least one lowercase letter"
+    if not re.search(r'\d', password):
+        return False, "Password must contain at least one number"
+    if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+        return False, "Password must contain at least one special character"
+    return True, "Password is strong"
+
+def send_confirmation_email(email, name):
+    """Send email confirmation link"""
+    try:
+        token = serializer.dumps(email, salt='email-confirm')
+        confirm_url = url_for('confirm_email', token=token, _external=True)
+        
+        # DEBUG: Output to console
+        print("\n" + "="*70)
+        print(f"📧 SENDING EMAIL")
+        print(f"   To: {email}")
+        print(f"   Name: {name}")
+        print(f"🔗 CONFIRMATION LINK:")
+        print(f"   {confirm_url}")
+        print("="*70 + "\n")
+        
+        msg = Message('Confirm Your Email - EHR System',
+                      recipients=[email])
+        msg.html = f"""
+        <h2>Welcome to EHR System, {name}!</h2>
+        <p>Thank you for registering. Please confirm your email address by clicking the link below:</p>
+        <p><a href="{confirm_url}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Confirm Email</a></p>
+        <p>Or copy and paste this link into your browser:</p>
+        <p>{confirm_url}</p>
+        <p>This link will expire in 24 hours.</p>
+        <p>If you didn't register for an account, please ignore this email.</p>
+        """
+        mail.send(msg)
+        print("✅ Email sent successfully!\n")
+        return True
+    except Exception as e:
+        print(f"❌ Error sending email: {e}\n")
+        return False
+
+def send_password_reset_email(email, name):
+    """Send password reset link"""
+    try:
+        token = serializer.dumps(email, salt='password-reset')
+        reset_url = url_for('reset_password', token=token, _external=True)
+        
+        # DEBUG: Output to console
+        print("\n" + "="*70)
+        print(f"🔑 SENDING PASSWORD RESET")
+        print(f"   To: {email}")
+        print(f"   Name: {name}")
+        print(f"🔗 RESET LINK:")
+        print(f"   {reset_url}")
+        print("="*70 + "\n")
+        
+        msg = Message('Password Reset Request - EHR System',
+                      recipients=[email])
+        msg.html = f"""
+        <h2>Password Reset Request</h2>
+        <p>Hello {name},</p>
+        <p>We received a request to reset your password. Click the link below to reset it:</p>
+        <p><a href="{reset_url}" style="background-color: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Password</a></p>
+        <p>Or copy and paste this link into your browser:</p>
+        <p>{reset_url}</p>
+        <p>This link will expire in 1 hour.</p>
+        <p>If you didn't request a password reset, please ignore this email.</p>
+        """
+        mail.send(msg)
+        print("✅ Password reset email sent successfully!\n")
+        return True
+    except Exception as e:
+        print(f"❌ Error sending email: {e}\n")
+        return False
+
 # --- Routes ---
 @app.route('/')
 def index():
@@ -75,7 +176,13 @@ def register():
         password_raw = request.form.get('password','').strip()
 
         if not name or not email or not password_raw:
-            flash('Fill all fields', 'danger')
+            flash('Please fill all fields', 'danger')
+            return redirect(url_for('register'))
+
+        # Validate password strength
+        is_valid, message = validate_password(password_raw)
+        if not is_valid:
+            flash(message, 'danger')
             return redirect(url_for('register'))
 
         if Doctor.query.filter_by(email=email).first():
@@ -83,12 +190,71 @@ def register():
             return redirect(url_for('register'))
 
         password = generate_password_hash(password_raw)
-        new_doctor = Doctor(name=name, email=email, password=password)
+        new_doctor = Doctor(name=name, email=email, password=password, confirmed=False)
         db.session.add(new_doctor)
         db.session.commit()
-        flash('Registration successful! Please log in.', 'success')
+
+        # Send confirmation email
+        if send_confirmation_email(email, name):
+            flash('Registration successful! Please check your email to confirm your account.', 'success')
+        else:
+            flash('Registration successful! However, we could not send the confirmation email. Please contact support.', 'warning')
+        
         return redirect(url_for('login'))
+    
     return render_template('register.html')
+
+# --- Email Confirmation ---
+@app.route('/confirm/<token>')
+def confirm_email(token):
+    try:
+        email = serializer.loads(token, salt='email-confirm', max_age=86400)  # 24 hours
+    except SignatureExpired:
+        flash('The confirmation link has expired. Please request a new one.', 'danger')
+        return redirect(url_for('resend_confirmation'))
+    except BadSignature:
+        flash('Invalid confirmation link.', 'danger')
+        return redirect(url_for('login'))
+
+    doctor = Doctor.query.filter_by(email=email).first()
+    
+    if not doctor:
+        flash('Account not found.', 'danger')
+        return redirect(url_for('login'))
+    
+    if doctor.confirmed:
+        flash('Account already confirmed. Please log in.', 'info')
+    else:
+        doctor.confirmed = True
+        doctor.confirmed_on = db.func.current_timestamp()
+        db.session.commit()
+        flash('Your email has been confirmed! You can now log in.', 'success')
+    
+    return redirect(url_for('login'))
+
+# --- Resend Confirmation ---
+@app.route('/resend_confirmation', methods=['GET', 'POST'])
+def resend_confirmation():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        doctor = Doctor.query.filter_by(email=email).first()
+        
+        if doctor:
+            if doctor.confirmed:
+                flash('Your account is already confirmed. Please log in.', 'info')
+                return redirect(url_for('login'))
+            
+            if send_confirmation_email(email, doctor.name):
+                flash('A new confirmation email has been sent. Please check your inbox.', 'success')
+            else:
+                flash('Could not send confirmation email. Please try again later.', 'danger')
+        else:
+            # Don't reveal if email exists or not (security)
+            flash('If the email exists, a confirmation link has been sent.', 'info')
+        
+        return redirect(url_for('login'))
+    
+    return render_template('resend_confirmation.html')
 
 # --- Login ---
 @app.route('/login', methods=['GET', 'POST'])
@@ -99,6 +265,10 @@ def login():
         doctor = Doctor.query.filter_by(email=email).first()
 
         if doctor and check_password_hash(doctor.password, password):
+            if not doctor.confirmed:
+                flash('Please confirm your email before logging in. Check your inbox.', 'warning')
+                return render_template('login.html', show_resend=True, email=email)
+            
             session['doctor_id'] = doctor.id
             session['doctor_name'] = doctor.name
             flash('Logged in successfully!', 'success')
@@ -107,6 +277,64 @@ def login():
             flash('Invalid email or password.', 'danger')
 
     return render_template('login.html')
+
+# --- Forgot Password ---
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        doctor = Doctor.query.filter_by(email=email).first()
+        
+        if doctor:
+            if send_password_reset_email(email, doctor.name):
+                flash('Password reset instructions have been sent to your email.', 'success')
+            else:
+                flash('Could not send reset email. Please try again later.', 'danger')
+        else:
+            # Don't reveal if email exists or not (security)
+            flash('If the email exists in our system, a password reset link has been sent.', 'info')
+        
+        return redirect(url_for('login'))
+    
+    return render_template('forgot_password.html')
+
+# --- Reset Password ---
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    try:
+        email = serializer.loads(token, salt='password-reset', max_age=3600)  # 1 hour
+    except SignatureExpired:
+        flash('The password reset link has expired. Please request a new one.', 'danger')
+        return redirect(url_for('forgot_password'))
+    except BadSignature:
+        flash('Invalid password reset link.', 'danger')
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        password_raw = request.form.get('password', '').strip()
+        password_confirm = request.form.get('password_confirm', '').strip()
+        
+        if password_raw != password_confirm:
+            flash('Passwords do not match.', 'danger')
+            return render_template('reset_password.html', token=token)
+        
+        # Validate password strength
+        is_valid, message = validate_password(password_raw)
+        if not is_valid:
+            flash(message, 'danger')
+            return render_template('reset_password.html', token=token)
+        
+        doctor = Doctor.query.filter_by(email=email).first()
+        if doctor:
+            doctor.password = generate_password_hash(password_raw)
+            db.session.commit()
+            flash('Your password has been reset successfully. Please log in.', 'success')
+            return redirect(url_for('login'))
+        else:
+            flash('Account not found.', 'danger')
+            return redirect(url_for('login'))
+    
+    return render_template('reset_password.html', token=token)
 
 # --- Dashboard with search ---
 @app.route('/dashboard')

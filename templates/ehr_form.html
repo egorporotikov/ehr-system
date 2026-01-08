@@ -1,75 +1,217 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
 {% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">{% if patient %}Edit Patient{% else %}New Patient{% endif %}</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    
+                    <!-- Patient Name -->
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Patient Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               value="{{ patient.name if patient else '' }}" required>
+                    </div>
 
-<h2>{{ 'Edit Patient' if patient else 'New Patient' }}</h2>
+                    <!-- Age -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="age" class="form-label">Age</label>
+                            <input type="number" class="form-control" id="age" name="age" 
+                                   value="{{ patient.age if patient else '' }}" min="0" max="150">
+                        </div>
 
-<form method="POST" enctype="multipart/form-data">
+                        <!-- Weight -->
+                        <div class="col-md-6 mb-3">
+                            <label for="weight" class="form-label">Weight (kg)</label>
+                            <input type="number" class="form-control" id="weight" name="weight" 
+                                   value="{{ patient.weight if patient else '' }}" step="0.1" min="0">
+                        </div>
+                    </div>
 
-    <!-- TEXT INPUT -->
-    <div class="mb-3">
-        <label>Name</label>
-        <input class="form-control" name="name" required
-               value="{{ patient.name if patient else '' }}">
+                    <!-- Gender (Radio buttons) -->
+                    <div class="mb-3">
+                        <label class="form-label">Gender</label>
+                        <div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="gender" id="male" value="Male"
+                                       {% if patient and patient.gender == 'Male' %}checked{% endif %}>
+                                <label class="form-check-label" for="male">Male</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="gender" id="female" value="Female"
+                                       {% if patient and patient.gender == 'Female' %}checked{% endif %}>
+                                <label class="form-check-label" for="female">Female</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="gender" id="other" value="Other"
+                                       {% if patient and patient.gender == 'Other' %}checked{% endif %}>
+                                <label class="form-check-label" for="other">Other</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Last Visit (Date with Datepicker) -->
+                    <div class="mb-3">
+                        <label for="last_visit" class="form-label">
+                            Last Visit Date
+                            <i class="text-muted" style="font-size: 0.9em;">(Click to open calendar)</i>
+                        </label>
+                        <input type="text" class="form-control" id="last_visit" name="last_visit" 
+                               value="{{ patient.last_visit if patient else '' }}" 
+                               placeholder="Select date">
+                    </div>
+
+                    <!-- Allergies (Checkboxes) -->
+                    <div class="mb-3">
+                        <label class="form-label">Allergies</label>
+                        {% set patient_allergies = patient.allergies.split(',') if patient and patient.allergies else [] %}
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="allergies" value="Penicillin" id="allergy1"
+                                           {% if 'Penicillin' in patient_allergies %}checked{% endif %}>
+                                    <label class="form-check-label" for="allergy1">Penicillin</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="allergies" value="Peanuts" id="allergy2"
+                                           {% if 'Peanuts' in patient_allergies %}checked{% endif %}>
+                                    <label class="form-check-label" for="allergy2">Peanuts</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="allergies" value="Latex" id="allergy3"
+                                           {% if 'Latex' in patient_allergies %}checked{% endif %}>
+                                    <label class="form-check-label" for="allergy3">Latex</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="allergies" value="Aspirin" id="allergy4"
+                                           {% if 'Aspirin' in patient_allergies %}checked{% endif %}>
+                                    <label class="form-check-label" for="allergy4">Aspirin</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="allergies" value="Shellfish" id="allergy5"
+                                           {% if 'Shellfish' in patient_allergies %}checked{% endif %}>
+                                    <label class="form-check-label" for="allergy5">Shellfish</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="allergies" value="Eggs" id="allergy6"
+                                           {% if 'Eggs' in patient_allergies %}checked{% endif %}>
+                                    <label class="form-check-label" for="allergy6">Eggs</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="allergies" value="Sulfa" id="allergy7"
+                                           {% if 'Sulfa' in patient_allergies %}checked{% endif %}>
+                                    <label class="form-check-label" for="allergy7">Sulfa Drugs</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="allergies" value="Iodine" id="allergy8"
+                                           {% if 'Iodine' in patient_allergies %}checked{% endif %}>
+                                    <label class="form-check-label" for="allergy8">Iodine</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="allergies" value="None" id="allergy9"
+                                           {% if 'None' in patient_allergies %}checked{% endif %}>
+                                    <label class="form-check-label" for="allergy9">No Known Allergies</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medical History (Textarea) -->
+                    <div class="mb-3">
+                        <label for="medical_history" class="form-label">Medical History</label>
+                        <textarea class="form-control" id="medical_history" name="medical_history" 
+                                  rows="5" placeholder="Enter patient's medical history, past conditions, surgeries, etc.">{{ patient.medical_history if patient else '' }}</textarea>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Upload Image (X-Ray, MRI, Photo, etc.)</label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                        {% if patient and patient.image_filename %}
+                            <small class="text-muted d-block mt-2">
+                                Current image: <a href="{{ url_for('uploaded_file', filename=patient.image_filename) }}" target="_blank">{{ patient.image_filename }}</a>
+                            </small>
+                        {% endif %}
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> {% if patient %}Update Patient{% else %}Create Patient{% endif %}
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
     </div>
+</div>
 
-    <!-- NUMBER INPUT -->
-    <div class="mb-3">
-        <label>Age</label>
-        <input class="form-control" type="number" name="age"
-               value="{{ patient.age if patient else '' }}">
-    </div>
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
-    <!-- RADIO -->
-    <div class="mb-3">
-        <label>Gender</label><br>
-        <input type="radio" name="gender" value="Male"
-            {% if patient and patient.gender == 'Male' %}checked{% endif %}> Male
-        <input type="radio" name="gender" value="Female"
-            {% if patient and patient.gender == 'Female' %}checked{% endif %}> Female
-    </div>
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-    <!-- DATEPICKER (FLATPICKR) -->
-    <div class="mb-3">
-        <label>Last Visit</label>
-        <input type="text" id="last_visit" name="last_visit"
-               class="form-control"
-               value="{{ patient.last_visit if patient else '' }}">
-    </div>
-
-    <!-- CHECKBOX -->
-    <div class="mb-3">
-        <label>Allergies</label><br>
-        <input type="checkbox" name="allergies" value="Pollen"> Pollen
-        <input type="checkbox" name="allergies" value="Dust"> Dust
-        <input type="checkbox" name="allergies" value="Food"> Food
-    </div>
-
-    <!-- TEXTAREA -->
-    <div class="mb-3">
-        <label>Medical History</label>
-        <textarea class="form-control" name="medical_history">{{ patient.medical_history if patient else '' }}</textarea>
-    </div>
-
-    <!-- IMAGE UPLOAD -->
-    <div class="mb-3">
-        <label>Patient Photo</label>
-        <input class="form-control" type="file" name="image">
-        {% if patient and patient.image_filename %}
-            <img src="{{ url_for('uploaded_file', filename=patient.image_filename) }}"
-                 width="120" class="mt-2">
-        {% endif %}
-    </div>
-
-    <button class="btn btn-success">Save</button>
-    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
-</form>
-
-<!-- FLATPICKR INIT -->
+<!-- Initialize Datepicker -->
 <script>
+document.addEventListener('DOMContentLoaded', function() {
     flatpickr("#last_visit", {
-        dateFormat: "Y-m-d",
-        allowInput: true
+        dateFormat: "Y-m-d",           // Format: 2024-01-08
+        maxDate: "today",              // Can't select future dates
+        altInput: true,                // Show user-friendly format
+        altFormat: "F j, Y",           // Display as "January 8, 2024"
+        allowInput: true,              // Allow manual typing
+        clickOpens: true,              // Open on click
+        theme: "light",                // Theme style
+        
+        // Custom styling
+        onReady: function(selectedDates, dateStr, instance) {
+            instance.calendarContainer.classList.add('flatpickr-custom');
+        },
+        
+        // Show today button
+        plugins: []
     });
+});
 </script>
+
+<!-- Optional: Custom styling for datepicker -->
+<style>
+.flatpickr-custom {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.flatpickr-day.today {
+    border-color: #007bff !important;
+}
+
+.flatpickr-day.selected {
+    background: #007bff !important;
+    border-color: #007bff !important;
+}
+
+#last_visit {
+    cursor: pointer;
+}
+
+#last_visit:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+</style>
 
 {% endblock %}

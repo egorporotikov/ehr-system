@@ -1,11 +1,113 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
 {% block content %}
-<div class="jumbotron">
-  <h1 class="display-5">EHR Information System</h1>
-  <p class="lead">A demo Electronic Health Record system for course project.</p>
-  <hr>
-  <p>Login to manage patients or register as a new doctor.</p>
-  <a class="btn btn-primary" href="{{ url_for('register') }}">Register</a>
-  <a class="btn btn-secondary" href="{{ url_for('login') }}">Login</a>
+<div class="row min-vh-100 align-items-center">
+    <div class="col-lg-6 mb-4 mb-lg-0">
+        <h1 class="display-4 fw-bold mb-4">Electronic Health Record System</h1>
+        <p class="lead mb-4">
+            A modern, secure platform for managing patient records, medical histories, and healthcare data. 
+            Built with advanced security features and user-friendly design.
+        </p>
+        
+        <div class="d-flex gap-3 mb-5">
+            <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-person-plus"></i> Get Started
+            </a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg">
+                <i class="bi bi-box-arrow-in-right"></i> Sign In
+            </a>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-6">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-shield-check text-primary me-3" style="font-size: 2rem;"></i>
+                    <div>
+                        <h5>Secure</h5>
+                        <p class="text-muted mb-0">Email verification and encrypted data</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-lightning-charge text-primary me-3" style="font-size: 2rem;"></i>
+                    <div>
+                        <h5>Fast</h5>
+                        <p class="text-muted mb-0">Quick access to patient records</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-people text-primary me-3" style="font-size: 2rem;"></i>
+                    <div>
+                        <h5>User-Friendly</h5>
+                        <p class="text-muted mb-0">Intuitive interface for healthcare professionals</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-search text-primary me-3" style="font-size: 2rem;"></i>
+                    <div>
+                        <h5>Searchable</h5>
+                        <p class="text-muted mb-0">Find patient records instantly</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow-lg border-0">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="bi bi-hospital text-primary" style="font-size: 5rem;"></i>
+                </div>
+                <h3 class="text-center mb-4">Key Features</h3>
+                <ul class="list-unstyled">
+                    <li class="mb-3">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        <strong>Patient Management:</strong> Complete CRUD operations
+                    </li>
+                    <li class="mb-3">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        <strong>Medical Records:</strong> Store comprehensive health data
+                    </li>
+                    <li class="mb-3">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        <strong>Image Upload:</strong> X-rays, MRIs, and medical images
+                    </li>
+                    <li class="mb-3">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        <strong>Allergy Tracking:</strong> Critical patient safety information
+                    </li>
+                    <li class="mb-3">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        <strong>Search Function:</strong> Quick patient lookup
+                    </li>
+                    <li class="mb-3">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        <strong>Secure Authentication:</strong> Email verification required
+                    </li>
+                </ul>
+                
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('ehr_info') }}" class="btn btn-outline-secondary">
+                        Learn More <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+.min-vh-100 {
+    min-height: calc(100vh - 200px);
+}
+</style>
 {% endblock %}

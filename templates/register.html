@@ -1,44 +1,196 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Register - EHR System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <div class="container mt-5">
-        <h2 class="mb-4">Doctor Registration</h2>
+{% extends 'base.html' %}
 
-        <!-- Flash messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {% for category, message in messages %}
-              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-              </div>
-            {% endfor %}
-          {% endif %}
-        {% endwith %}
-
-        <form method="POST" action="{{ url_for('register') }}">
-            <div class="mb-3">
-                <label for="name" class="form-label">Full Name</label>
-                <input type="text" class="form-control" id="name" name="name" placeholder="Enter your full name" required>
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Doctor Registration</h3>
             </div>
-            <div class="mb-3">
-                <label for="email" class="form-label">Email address</label>
-                <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+            <div class="card-body">
+                <form method="POST" id="registerForm">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                        <small class="form-text text-muted">You will need to verify this email address</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                        <div class="mt-2">
+                            <small class="text-muted d-block"><strong>Password Requirements:</strong></small>
+                            <small id="length" class="text-danger">✗ At least 8 characters</small><br>
+                            <small id="uppercase" class="text-danger">✗ One uppercase letter</small><br>
+                            <small id="lowercase" class="text-danger">✗ One lowercase letter</small><br>
+                            <small id="number" class="text-danger">✗ One number</small><br>
+                            <small id="special" class="text-danger">✗ One special character (!@#$%^&*)</small>
+                        </div>
+                        <div class="progress mt-2" style="height: 5px;">
+                            <div id="passwordStrength" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password_confirm" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" id="password_confirm" name="password_confirm" required>
+                        <small id="passwordMatch" class="form-text"></small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100" id="submitBtn" disabled>Register</button>
+                </form>
+                
+                <div class="text-center mt-3">
+                    <p class="mb-0">Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+                </div>
             </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Register</button>
-            <a href="{{ url_for('login') }}" class="btn btn-link">Already have an account? Log in</a>
-        </form>
+        </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const password = document.getElementById('password');
+    const passwordConfirm = document.getElementById('password_confirm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    const requirements = {
+        length: document.getElementById('length'),
+        uppercase: document.getElementById('uppercase'),
+        lowercase: document.getElementById('lowercase'),
+        number: document.getElementById('number'),
+        special: document.getElementById('special')
+    };
+    
+    const passwordStrength = document.getElementById('passwordStrength');
+    const passwordMatch = document.getElementById('passwordMatch');
+    
+    let validations = {
+        length: false,
+        uppercase: false,
+        lowercase: false,
+        number: false,
+        special: false,
+        match: false
+    };
+    
+    function checkPassword() {
+        const val = password.value;
+        let strength = 0;
+        
+        // Length check
+        if (val.length >= 8) {
+            requirements.length.classList.remove('text-danger');
+            requirements.length.classList.add('text-success');
+            requirements.length.innerHTML = '✓ At least 8 characters';
+            validations.length = true;
+            strength += 20;
+        } else {
+            requirements.length.classList.remove('text-success');
+            requirements.length.classList.add('text-danger');
+            requirements.length.innerHTML = '✗ At least 8 characters';
+            validations.length = false;
+        }
+        
+        // Uppercase check
+        if (/[A-Z]/.test(val)) {
+            requirements.uppercase.classList.remove('text-danger');
+            requirements.uppercase.classList.add('text-success');
+            requirements.uppercase.innerHTML = '✓ One uppercase letter';
+            validations.uppercase = true;
+            strength += 20;
+        } else {
+            requirements.uppercase.classList.remove('text-success');
+            requirements.uppercase.classList.add('text-danger');
+            requirements.uppercase.innerHTML = '✗ One uppercase letter';
+            validations.uppercase = false;
+        }
+        
+        // Lowercase check
+        if (/[a-z]/.test(val)) {
+            requirements.lowercase.classList.remove('text-danger');
+            requirements.lowercase.classList.add('text-success');
+            requirements.lowercase.innerHTML = '✓ One lowercase letter';
+            validations.lowercase = true;
+            strength += 20;
+        } else {
+            requirements.lowercase.classList.remove('text-success');
+            requirements.lowercase.classList.add('text-danger');
+            requirements.lowercase.innerHTML = '✗ One lowercase letter';
+            validations.lowercase = false;
+        }
+        
+        // Number check
+        if (/\d/.test(val)) {
+            requirements.number.classList.remove('text-danger');
+            requirements.number.classList.add('text-success');
+            requirements.number.innerHTML = '✓ One number';
+            validations.number = true;
+            strength += 20;
+        } else {
+            requirements.number.classList.remove('text-success');
+            requirements.number.classList.add('text-danger');
+            requirements.number.innerHTML = '✗ One number';
+            validations.number = false;
+        }
+        
+        // Special character check
+        if (/[!@#$%^&*(),.?":{}|<>]/.test(val)) {
+            requirements.special.classList.remove('text-danger');
+            requirements.special.classList.add('text-success');
+            requirements.special.innerHTML = '✓ One special character';
+            validations.special = true;
+            strength += 20;
+        } else {
+            requirements.special.classList.remove('text-success');
+            requirements.special.classList.add('text-danger');
+            requirements.special.innerHTML = '✗ One special character';
+            validations.special = false;
+        }
+        
+        // Update strength bar
+        passwordStrength.style.width = strength + '%';
+        if (strength < 40) {
+            passwordStrength.className = 'progress-bar bg-danger';
+        } else if (strength < 80) {
+            passwordStrength.className = 'progress-bar bg-warning';
+        } else {
+            passwordStrength.className = 'progress-bar bg-success';
+        }
+        
+        checkMatch();
+        updateSubmitButton();
+    }
+    
+    function checkMatch() {
+        if (passwordConfirm.value === '') {
+            passwordMatch.textContent = '';
+            passwordMatch.className = 'form-text';
+            validations.match = false;
+        } else if (password.value === passwordConfirm.value) {
+            passwordMatch.textContent = '✓ Passwords match';
+            passwordMatch.className = 'form-text text-success';
+            validations.match = true;
+        } else {
+            passwordMatch.textContent = '✗ Passwords do not match';
+            passwordMatch.className = 'form-text text-danger';
+            validations.match = false;
+        }
+        updateSubmitButton();
+    }
+    
+    function updateSubmitButton() {
+        const allValid = Object.values(validations).every(v => v === true);
+        submitBtn.disabled = !allValid;
+    }
+    
+    password.addEventListener('input', checkPassword);
+    passwordConfirm.addEventListener('input', checkMatch);
+});
+</script>
+{% endblock %}
