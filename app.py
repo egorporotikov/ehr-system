@@ -17,14 +17,14 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Email Configuration - Mailtrap
-app.config['MAIL_SERVER'] = 'sandbox.smtp.mailtrap.io'
-app.config['MAIL_PORT'] = 2525
-app.config['MAIL_USERNAME'] = '8eaccad9862746'
-app.config['MAIL_PASSWORD'] = 'a67c60268643b5'
+# Email Configuration - Mailgun
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USERNAME'] = 'egor.porotikov02@gmail.com'
+app.config['MAIL_PASSWORD'] = 'umya kfmx ohwe rtrq'  # Тот пароль что вы создали
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_DEFAULT_SENDER'] = 'noreply@ehr-system.com'
+app.config['MAIL_DEFAULT_SENDER'] = 'egor.porotikov02@gmail.com'
 
 db = SQLAlchemy(app)
 mail = Mail(app)
@@ -499,3 +499,7 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
+    
+    
+    
+    #https://mailtrap.io/inboxes/4296136/messages
