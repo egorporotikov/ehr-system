@@ -17,14 +17,14 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Email Configuration - Mailgun
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USERNAME'] = 'egor.porotikov02@gmail.com'
-app.config['MAIL_PASSWORD'] = 'umya kfmx ohwe rtrq'  # Тот пароль что вы создали
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_DEFAULT_SENDER'] = 'egor.porotikov02@gmail.com'
+# Email Configuration - Google
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT'))
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS') == 'True'
+app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL') == 'True'
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
 
 db = SQLAlchemy(app)
 mail = Mail(app)
@@ -66,6 +66,8 @@ class SUSResult(db.Model):
     q9 = db.Column(db.Integer, nullable=False)
     q10 = db.Column(db.Integer, nullable=False)
     submitted_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    
+    
 
 SUS_QUESTIONS = [
     "1. I think that I would like to use this system frequently.",
