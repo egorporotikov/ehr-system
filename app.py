@@ -23,11 +23,11 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 # Email Configuration - Google
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
 app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', '')
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', '')
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', 'egor.porotikov02@gmail.com')  # ← Ваш email
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', '')  # App Password из переменной
 app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True') == 'True'
 app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False') == 'True'
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', '')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER') or os.environ.get('MAIL_USERNAME') or 'egor.porotikov02@gmail.com'  # ← Исправлено!
 
 
 db = SQLAlchemy(app)
@@ -508,4 +508,4 @@ if __name__ == '__main__':
     
     
     
-    #https://mailtrap.io/inboxes/4296136/messages
+    #https://www.pythonanywhere.com/user/Egor98/
