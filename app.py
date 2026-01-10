@@ -7,6 +7,9 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 import os
 import re
 from flask_migrate import Migrate
+from dotenv import load_dotenv
+load_dotenv()
+
 
 
 # --- App Setup ---
