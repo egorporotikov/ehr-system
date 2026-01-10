@@ -12,10 +12,15 @@ from flask_migrate import Migrate
 # --- App Setup ---
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'replace_this_with_a_random_secret')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = (
+    "mysql+pymysql://Egor98:Greedisgood1998%2A@Egor98.mysql.pythonanywhere-services.com/Egor98$default"
+)
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
 
 # Email Configuration - Google
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER')
